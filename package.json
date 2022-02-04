@@ -1,0 +1,17 @@
+{
+  "name": "crypto-to-csv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/arbitrum-and-polygon-to-taxbit.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.25.0",
+    "dotenv": "^16.0.0",
+    "json2csv": "^5.0.6"
+  }
+}
