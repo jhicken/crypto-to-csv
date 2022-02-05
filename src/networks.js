@@ -4,6 +4,7 @@ require('dotenv').config();
 const NETWORK_KEYS = {
   "POLYGON": 'POLYGON',
   "ARBITRUM": 'ARBITRUM',
+  "CRONOS": 'CRONOS',
 }
 
 const NETWORKS = {
@@ -16,6 +17,11 @@ const NETWORKS = {
     API_KEY: process.env.ARBISCAN_API_KEY,
     HOST: 'https://api.arbiscan.io',
     COIN_SYMBOL: 'ETH'
+  },
+  [NETWORK_KEYS.CRONOS]: {
+    API_KEY: process.env.CRONOSCAN_API_KEY,
+    HOST: 'https://api.cronoscan.com',
+    COIN_SYMBOL: 'CRO'
   }
 }
 

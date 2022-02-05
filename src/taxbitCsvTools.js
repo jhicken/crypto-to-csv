@@ -2,8 +2,7 @@ const { NETWORKS } = require('./networks');
 
 function createRow({
   transaction,
-  isNativeEthTransaction,
-  address
+  isNativeCoinTransaction,
 }) {
   let {
     hash,
@@ -17,6 +16,7 @@ function createRow({
     tokenName,
     tokenSymbol,
     network,
+    transactionAddress,
     isError,
     txreceipt_status,
     contractAddress,
@@ -30,13 +30,13 @@ function createRow({
   const coin_symbol = NETWORKS[network].COIN_SYMBOL;
   from = from.toLowerCase();
   to = to.toLowerCase();
-  address = address.toLowerCase();
+  address = transactionAddress.toLowerCase();
   network = network.toLowerCase();
   // I also need a wasy to know if the transaction was cancelled or not
   // isError seems to be incorrect and diggin on arbiscans api i found non of the apis told me. It might be a bug in the api.
   // I know the info would be retrievable by scrapping but i dont want to do that. Might just need to report it to the arbiscan folks.
   let row
-  if(isNativeEthTransaction) {
+  if(isNativeCoinTransaction) {
     const sentValue = from === address ? value / (Math.pow(10,18)) : null
     const recivedValue = to === address ? value / (Math.pow(10,18)) : null
     row = {
@@ -56,7 +56,7 @@ function createRow({
     }
   }
   
-  if (isNativeEthTransaction && to === '0x000000000000000000000000000000000000006e') {
+  if (isNativeCoinTransaction && to === '0x000000000000000000000000000000000000006e') {
     row = {
       'Date and Time': new Date(timeStamp*1000).toISOString().split('.')[0],
       //Buy, Transfer In, Trade, Transfer Out, Sale, Income, Expense
@@ -74,7 +74,7 @@ function createRow({
     }
   }
 
-  if(!isNativeEthTransaction) {
+  if(!isNativeCoinTransaction) {
     const sentValue = from === address ? value / (Math.pow(10,tokenDecimal)) : null
     const recivedValue = to === address ? value / (Math.pow(10,tokenDecimal)) : null
     row = {
@@ -96,19 +96,17 @@ function createRow({
   return row
 }
 
-function transactionsToRows (transactions, address) {
+function transactionsToRows (transactions) {
   return transactions.reduce((agg,transaction) => {
     
     agg.push(createRow({
       transaction,
-      isNativeEthTransaction: true,
-      address
+      isNativeCoinTransaction: true,
     }))
     transaction?.multicallTransactions?.forEach?.(multicallTransaction => {
       agg.push(createRow({
         transaction: multicallTransaction,
-        isNativeEthTransaction: false,
-        address
+        isNativeCoinTransaction: false,
       }))
     })
 

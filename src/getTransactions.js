@@ -1,18 +1,13 @@
-// TODO: clean out failed transactions
-// TODO: Add ETH mainnet optimism maybe solona
-// TODO: Find swap contracts and combine swap transactions this could be done by knowing uniswap swap addresses or by making a guess looking at the in and outs on transactions.
-// TODO: fix token transactions that seem to be missing from the list of full transactions (It might just be that they should be added to the list.)
-
-require('dotenv').config();
 const axios = require("axios");
-const { parse } = require('json2csv');
-const fs = require('fs');
-const { transactionsToRows } = require('./taxbitCsvTools')
+const {
+  sortByDate,
+  setTimeoutAsync,
+  runSerial
+} = require('./utils');
 const {
   NETWORK_KEYS,
   NETWORKS
 } = require('./networks');
-
 
 
 
@@ -38,6 +33,7 @@ async function getTransactionDataByAddressAndNetwork({
     if(fullTransaction) {
       fullTransaction.multicallTransactions = fullTransaction.multicallTransactions || [];
       tokenTransaction.network = network;
+      tokenTransaction.transactionAddress = address;
       fullTransaction.multicallTransactions.push(tokenTransaction);
     } else {
       console.warn(`No full transaction found for Token ${tokenTransaction.hash} on ${network}`);
@@ -56,6 +52,7 @@ async function getTransactionDataByAddressAndNetwork({
       if(fullTransaction) {
         fullTransaction.multicallTransactions = fullTransaction.multicallTransactions || [];
         NFTTransaction.network = network;
+        NFTTransaction.transactionAddress = address;
         fullTransaction.multicallTransactions.push(NFTTransaction);
       } else {
         console.warn(`No full transaction found for NFT transaction ${NFTTransaction.hash} on ${network}`);
@@ -66,16 +63,12 @@ async function getTransactionDataByAddressAndNetwork({
 
   return transactions.map((transaction)=>{
     transaction.network = network
+    transaction.transactionAddress = address;
     return transaction;
   });
 }
 
 
-
-//sort by date
-function sortByDate(a,b) {
-  return new Date(a.timeStamp*1000) - new Date(b.timeStamp*1000)
-}
 
 async function getAllNetworkTransactions(address) {
   const allTransactions = (await Promise.all(Object.keys(NETWORK_KEYS).map(async(network)=>{
@@ -85,12 +78,28 @@ async function getAllNetworkTransactions(address) {
     });
   }))).flat().sort(sortByDate);
 
-  const csv = parse(transactionsToRows(allTransactions, address), {});
-  console.log(csv);
-  fs.writeFileSync(
-    `transactions-${address}.csv`,
-    csv
-  );
+  return allTransactions;
+
 }
 
-getAllNetworkTransactions(process.env.USER_ADDRESS);
+async function getAllNetworkTransactionsFromAddresses(addresses) {
+
+  let allTransactions = [];
+  const fetchingFunctions = addresses.map((address)=>{
+    return ()=> {
+      return setTimeoutAsync(async ()=>{
+        allTransactions.push(await getAllNetworkTransactions(address));
+      },1000)
+    }
+  })
+
+  return runSerial(fetchingFunctions).then(()=>{
+    return allTransactions.flat().sort(sortByDate);
+  });
+}
+
+module.exports = {
+  getTransactionDataByAddressAndNetwork,
+  getAllNetworkTransactions,
+  getAllNetworkTransactionsFromAddresses
+}
