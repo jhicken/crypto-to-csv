@@ -1,3 +1,3 @@
-const {start} = require('./get-transaction-to-taxbit');
+const {start} = require('./getTransactionToCSV');
 
 start();

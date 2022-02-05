@@ -32,6 +32,18 @@ function createRow({
   to = to.toLowerCase();
   address = transactionAddress.toLowerCase();
   network = network.toLowerCase();
+
+  let date = new Date(timeStamp*1000)
+  date = (
+    `${
+    (date.getMonth()+1).toString().padStart(2, '0')}/${
+    date.getDate().toString().padStart(2, '0')}/${
+    date.getFullYear().toString().padStart(4, '0')} ${
+    date.getHours().toString().padStart(2, '0')}:${
+    date.getMinutes().toString().padStart(2, '0')}:${
+    date.getSeconds().toString().padStart(2, '0')}`
+  )
+
   // I also need a wasy to know if the transaction was cancelled or not
   // isError seems to be incorrect and diggin on arbiscans api i found non of the apis told me. It might be a bug in the api.
   // I know the info would be retrievable by scrapping but i dont want to do that. Might just need to report it to the arbiscan folks.
@@ -40,37 +52,27 @@ function createRow({
     const sentValue = from === address ? value / (Math.pow(10,18)) : null
     const recivedValue = to === address ? value / (Math.pow(10,18)) : null
     row = {
-      'Date and Time': new Date(timeStamp*1000).toISOString().split('.')[0],
-      //Buy, Transfer In, Trade, Transfer Out, Sale, Income, Expense
-      'Transaction Type': to === address ? 'Transfer In' : 'Transfer Out',// this will need some updating
-      'Sent Quantity': sentValue,
-      'Sent Currency': from === address ? coin_symbol : null,
-      'Sending Source': `Metamask ${network} ${coin_symbol}`,
+      'Date': date,
       'Received Quantity': recivedValue,
       'Received Currency': to === address ? coin_symbol : null,
-      'Receiving Destination': `Metamask ${network} ${coin_symbol}`,
-      'Fee': (gasPrice*gasUsed)/Math.pow(10,18), //18 is the number of decimal places in ether
+      'Sent Quantity': sentValue,
+      'Sent Currency': from === address ? coin_symbol : null,
+      'Fee Amount': (gasPrice*gasUsed)/Math.pow(10,18), //18 is the number of decimal places in ether
       'Fee Currency': coin_symbol,
-      'Exchange Transaction ID': null,
-      'Blockchain Transaction Hash': hash,
+      'Tag': null
     }
   }
   
   if (isNativeCoinTransaction && to === '0x000000000000000000000000000000000000006e') {
     row = {
-      'Date and Time': new Date(timeStamp*1000).toISOString().split('.')[0],
-      //Buy, Transfer In, Trade, Transfer Out, Sale, Income, Expense
-      'Transaction Type': 'Transfer In',
-      'Sent Quantity': null,
-      'Sent Currency': null,
-      'Sending Source': `Metamask ${network} ${coin_symbol}`,
+      'Date': date,
       'Received Quantity': value / (Math.pow(10,18)),
       'Received Currency': coin_symbol,
-      'Receiving Destination': `Metamask ${network} ${coin_symbol}`,
-      'Fee': null,
+      'Sent Quantity': null,
+      'Sent Currency': null,
+      'Fee Amount': 0,
       'Fee Currency': coin_symbol,
-      'Exchange Transaction ID': null,
-      'Blockchain Transaction Hash': hash,
+      'Tag': null
     }
   }
 
@@ -78,19 +80,14 @@ function createRow({
     const sentValue = from === address ? value / (Math.pow(10,tokenDecimal)) : null
     const recivedValue = to === address ? value / (Math.pow(10,tokenDecimal)) : null
     row = {
-      'Date and Time': new Date(timeStamp*1000).toISOString().split('.')[0],
-      //Buy, Transfer In, Trade, Transfer Out, Sale, Income, Expense
-      'Transaction Type': to === address ? 'Transfer In' : 'Transfer Out',
-      'Sent Quantity': sentValue,
-      'Sent Currency': from === address ? tokenSymbol : null,
-      'Sending Source': `Metamask ${network} ${tokenName}`,
+      'Date': date,
       'Received Quantity': recivedValue,
       'Received Currency': to === address ? tokenSymbol : null,
-      'Receiving Destination': `Metamask ${network} ${tokenName}`,
-      'Fee': null,
+      'Sent Quantity': sentValue,
+      'Sent Currency': from === address ? tokenSymbol : null,
+      'Fee Amount': 0,
       'Fee Currency': coin_symbol,
-      'Exchange Transaction ID': null,
-      'Blockchain Transaction Hash': hash,
+      'Tag': null
     }
   }
   return row
