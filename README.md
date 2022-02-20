@@ -12,10 +12,11 @@ So I started this project after using `coinpanda.io` and finding that they messe
 
 1. run `npm ci`
 2. copy `.env.template` -> `.env`
-3. create accounts with the block exlporers (urls are in the `.env`)
-4. create api keys
-5. add api keys to `.env`
-6. add public wallet to `.env`
+3. copy `addressConfig.json.template` -> `addressConfig.json`
+4. create accounts with the block exlporers (urls are in the `.env`)
+5. create api keys
+6. add api keys to `.env`
+7. add public wallets and some descriptive names to `addressConfig.json`
 
 ## Startup
 

@@ -63,18 +63,18 @@ function createRow({
       'Transaction Type': 'Transfer In',
       'Sent Quantity': null,
       'Sent Currency': null,
-      'Sending Source': `Metamask ${network} ${coin_symbol}`,
+      'Sending Source': null, //As I am not the sender Tax bit does not want this
       'Received Quantity': value / (Math.pow(10,18)),
       'Received Currency': coin_symbol,
       'Receiving Destination': `Metamask ${network} ${coin_symbol}`,
-      'Fee': 0,
-      'Fee Currency': coin_symbol,
+      'Fee': null,
+      'Fee Currency': null,
       'Exchange Transaction ID': null,
       'Blockchain Transaction Hash': hash,
     }
   }
 
-  if(!isNativeCoinTransaction) {
+  if(!isNativeCoinTransaction) { // token or NFT
     const sentValue = from === address ? value / (Math.pow(10,tokenDecimal)) : null
     const recivedValue = to === address ? value / (Math.pow(10,tokenDecimal)) : null
     row = {
@@ -87,8 +87,8 @@ function createRow({
       'Received Quantity': recivedValue,
       'Received Currency': to === address ? tokenSymbol : null,
       'Receiving Destination': `Metamask ${network} ${tokenName}`,
-      'Fee': 0,
-      'Fee Currency': coin_symbol,
+      'Fee': null,
+      'Fee Currency': null,
       'Exchange Transaction ID': null,
       'Blockchain Transaction Hash': hash,
     }
@@ -112,6 +112,12 @@ function transactionsToRows (transactions) {
 
     return agg
   },[])
+}
+
+function combineTransactions(transactions) {
+  transactions.map((accumulator, tranaction)=>{
+    transaction?.multicallTransactions
+  })
 }
 
 module.exports = {

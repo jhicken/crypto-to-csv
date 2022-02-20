@@ -19,9 +19,11 @@ async function getTransactionDataByAddressAndNetwork({
 
   let NFTTransactions
 
+  console.log(`Fetching Transactions for ${address} on ${network}`);
   const tokensTransactions = (
     await axios.get(`${NETWORKS[network].HOST}/api?module=account&action=tokentx&address=${address}&startblock=1&endblock=99999999&sort=asc&apikey=${NETWORKS[network].API_KEY}`)
   ).data.result;
+  console.log(`Fetching Tokens transactions for ${address} on ${network}`);
   const transactions = (
     await axios.get(`${NETWORKS[network].HOST}/api?module=account&action=txlist&address=${address}&startblock=1&endblock=99999999&sort=asc&apikey=${NETWORKS[network].API_KEY}`)
   ).data.result;
@@ -41,9 +43,15 @@ async function getTransactionDataByAddressAndNetwork({
   })
 
   if(addNFTData) {
+    console.log(`Fetching NFT data for ${address} on ${network}`);
     NFTTransactions = (
-      await axios.get(`${NETWORKS[network].HOST}/api?module=account&action=tokennfttx&address=0xfc734694337069a7b838264cea7c469278a82b80&startblock=0&endblock=999999999&sort=asc`)
+      await axios.get(`${NETWORKS[network].HOST}/api?module=account&action=tokennfttx&address=${address}&startblock=0&endblock=999999999&sort=asc&apikey=${NETWORKS[network].API_KEY}`)
     ).data.result;
+
+    if(typeof NFTTransactions.forEach !== 'function') {
+      console.log(network,NFTTransactions)
+      return;
+    }
 
     NFTTransactions.forEach(NFTTransaction => {
       const fullTransaction = transactions.find((transaction) => {
@@ -70,11 +78,12 @@ async function getTransactionDataByAddressAndNetwork({
 
 
 
-async function getAllNetworkTransactions(address) {
+async function getAllNetworkTransactions(address, addNFTData) {
   const allTransactions = (await Promise.all(Object.keys(NETWORK_KEYS).map(async(network)=>{
     return await getTransactionDataByAddressAndNetwork({
       address,
-      network
+      network,
+      addNFTData
     });
   }))).flat().sort(sortByDate);
 
@@ -82,13 +91,13 @@ async function getAllNetworkTransactions(address) {
 
 }
 
-async function getAllNetworkTransactionsFromAddresses(addresses) {
+async function getAllNetworkTransactionsFromAddresses(addresses,addNFTData) {
 
   let allTransactions = [];
   const fetchingFunctions = addresses.map((address)=>{
     return ()=> {
       return setTimeoutAsync(async ()=>{
-        allTransactions.push(await getAllNetworkTransactions(address));
+        allTransactions.push(await getAllNetworkTransactions(address,addNFTData));
       },1000)
     }
   })

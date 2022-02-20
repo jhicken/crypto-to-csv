@@ -10,6 +10,7 @@ const { transactionsToRows: taxbitTransactionsToRows } = require('./csvToolsTaxb
 const { transactionsToRows: cointrackerioTransactionsToRows } = require('./csvToolsCointrackerio')
 const { getAllNetworkTransactionsFromAddresses } = require('./getTransactions');
 const { TAX_TRACKERS } = require('./taxTrackingSystems');
+const addressConfig = require('../addressConfig.json');
 
 async function convertToCSVAndWrite({
   transactions,
@@ -38,9 +39,9 @@ async function convertToCSVAndWrite({
 }
 
 async function start(addresses, taxTracker){
-  addresses = addresses || process.env.USER_ADDRESS.split(' ');
+  addresses = addresses || addressConfig.map(({ address }) => address);
   taxTracker = taxTracker || TAX_TRACKERS.TAXBIT
-  const transactions = await getAllNetworkTransactionsFromAddresses(addresses);
+  const transactions = await getAllNetworkTransactionsFromAddresses(addresses, true);
   convertToCSVAndWrite({
     transactions,
     writeFile: true,
